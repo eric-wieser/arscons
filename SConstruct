@@ -323,9 +323,9 @@ def fnPrintInfo(target, source, env):
 
 bldProcessing = Builder(action = fnProcessing) #, suffix = '.cpp', src_suffix = sketchExt)
 bldCompressCore = Builder(action = fnCompressCore)
-bldELF = Builder(action = AVR_BIN_PREFIX + 'gcc -mmcu=%s ' % MCU +
-                          '-Os -Wl,--gc-sections -lm %s -o $TARGET $SOURCES -lc' % ' '.join(extra_cflags))
-bldHEX = Builder(action = AVR_BIN_PREFIX + 'objcopy -O ihex -R .eeprom $SOURCES $TARGET')
+bldELF = Builder(action = [[AVR_BIN_PREFIX + 'gcc', '-mmcu=%s' % MCU,
+                          '-Os', '-Wl,--gc-sections', '-lm'] + extra_cflags + ['-o', '$TARGET', '$SOURCES', '-lc']])
+bldHEX = Builder(action = [[AVR_BIN_PREFIX + 'objcopy', '-O', 'ihex', '-R', '.eeprom', '$SOURCES', '$TARGET']])
 bldInfo = Builder(action = fnPrintInfo)
 
 envArduino.Append(BUILDERS = {'Processing' : bldProcessing})
@@ -429,16 +429,15 @@ if UPLOAD_PROTOCOL == 'stk500':
     UPLOAD_PROTOCOL = 'stk500v1'
 
 
-avrdudeOpts = ['-V', '-F', '-c %s' % UPLOAD_PROTOCOL, '-b %s' % UPLOAD_SPEED,
-               '-p %s' % MCU, '-P %s' % ARDUINO_PORT, '-U flash:w:$SOURCES']
+avrdudeOpts = ['-V', '-F', '-c', UPLOAD_PROTOCOL, '-b', UPLOAD_SPEED,
+               '-p', MCU, '-P', ARDUINO_PORT, '-U', 'flash:w:$SOURCES']
 if AVRDUDE_CONF:
-    avrdudeOpts.append('-C %s' % AVRDUDE_CONF)
+    avrdudeOpts += ['-C', AVRDUDE_CONF]
 
 if AVR_HOME_DUDE:
     AVR_BIN_PREFIX=AVR_HOME_DUDE
 
-fuse_cmd = '%s %s' % (path.join(path.dirname(AVR_BIN_PREFIX), 'avrdude'),
-                      ' '.join(avrdudeOpts))
+fuse_cmd = [path.join(path.dirname(AVR_BIN_PREFIX), 'avrdude')] + avrdudeOpts
 
 upload = envArduino.Alias('upload', TARGET + '.hex', [reset_cmd, fuse_cmd])
 AlwaysBuild(upload)
