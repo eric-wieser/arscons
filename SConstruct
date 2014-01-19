@@ -225,9 +225,9 @@ if ARDUINO_BOARD == "leonardo":
     cFlags += ["-DUSB_VID="+getBoardConf('build.vid')]
     cFlags += ["-DUSB_PID="+getBoardConf('build.pid')]
 
-envArduino = Environment(CC = AVR_BIN_PREFIX + 'gcc',
-                         CXX = AVR_BIN_PREFIX + 'g++',
-                         AS = AVR_BIN_PREFIX + 'gcc',
+envArduino = Environment(CC = File(AVR_BIN_PREFIX + 'gcc'),
+                         CXX = File(AVR_BIN_PREFIX + 'g++'),
+                         AS = File(AVR_BIN_PREFIX + 'gcc'),
                          CPPPATH = ['build/core'],
                          CPPDEFINES = {'F_CPU': F_CPU, 'ARDUINO': ARDUINO_VER},
                          CFLAGS = cFlags + ['-std=gnu99'],
